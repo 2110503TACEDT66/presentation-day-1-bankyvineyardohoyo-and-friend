@@ -1,7 +1,7 @@
 @startuml
 left to right direction
 package "VacQ"{
-    class "<<Application>>\nVacQService" as VacQService{}
+    class "<<Application>>\nMassageReservationService" as VacQService{}
 
     class "<<Resource>>\nMassages" as ResourceMassages{
         <<GET>> +getMassages():Massage
@@ -33,11 +33,11 @@ package "VacQ"{
         <<DELETE>> +deleteUser(): void
     }
     class "<<Resource>>\nAuth" as ResourceAuthRegister {
-        <<POST>> +register(): User
+        <<POST>> +register(): token
     }
 
      class "<<Resource>>\nUsers" as ResourceAuthLogin{
-         <<POST>> +login(): User
+         <<POST>> +login(): token
     }
      class "<<Resource>>\nUsers" as ResourceAuthLogout{
        <<GET>> +logout(): void
