@@ -29,6 +29,10 @@ connectDB();
 // Initialize express
 const app = express();
 
+// Swagger setup
+const swaggerSetup = require("./config/swagger");
+swaggerSetup(app);
+
 // Middleware
 app.use(express.json()); // For parsing application/json
 app.use(cookieParser()); // For parsing cookies
@@ -43,6 +47,7 @@ app.use(cors()); // Enable CORS
 app.use('/api/massages', require("./routes/massageRouter"));
 app.use('/api/auth', require("./routes/authRouter"));
 app.use('/api/reservations', require("./routes/reservationRouter"));
+app.use('/api/users', require("./routes/userRouter"));
 
 // Start listening
 const server = app.listen(PORT, () => {

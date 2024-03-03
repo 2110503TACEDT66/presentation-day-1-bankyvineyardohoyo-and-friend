@@ -39,10 +39,26 @@ const UserSchema = new mongoose.Schema({
     }
 });
 
+//Cascade delete reservations when a massage is deleted
+UserSchema.pre('deleteOne', { document: true, query: false }, async function (next) {
+    try {
+        console.log(`Reservations being removed for user ${this._id}`);
+        await this.model('Reservation').deleteMany({ user: this._id });
+        next();
+    } catch (error) {
+        next(error);
+    }
+});
+
 //Encrypt password using bcrypt
-UserSchema.pre('save', async function(next) {
+UserSchema.pre('save', async function (next) {
+    // Only hash the password if it has been modified (or is new)
+    if (!this.isModified('password')) return next();
+
+    // Now we hash the password
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
+    next();
 });
 
 //Sign JWT and return

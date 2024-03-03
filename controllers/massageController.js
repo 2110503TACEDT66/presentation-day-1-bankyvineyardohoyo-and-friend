@@ -14,7 +14,7 @@ exports.getMassages = async (req, res, next) => {
 
     let queryStr = JSON.stringify(reqQuery);
     queryStr = queryStr.replace(/\b(lt|lte|gt|gte|in)\b/g, match => `$${match}`);
-    query = Massage.find(JSON.parse(queryStr)).populate("reservations");
+    query = Massage.find(JSON.parse(queryStr));
 
     // Select
     if (req.query.select) {
@@ -35,7 +35,7 @@ exports.getMassages = async (req, res, next) => {
     const limit = parseInt(req.query.limit, 10) || 25;
     const startIndex = (page - 1) * limit;
     const endIndex = page * limit;
-    const total = await Massage.countDocuments();
+    const total = await Massage.countDocuments(JSON.parse(queryStr));
 
     query = query.skip(startIndex).limit(limit);        // skip to start index
 

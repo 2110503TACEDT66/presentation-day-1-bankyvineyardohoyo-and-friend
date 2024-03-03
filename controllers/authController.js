@@ -56,7 +56,7 @@ exports.login = (async (req, res, next) => {
 
         // validation email and password cannot be empty string
         if (!email || !password) {
-            res.status(400).send({
+            return res.status(400).send({
                 success: false,
                 msg: "Please provide an email and password."
             })
@@ -67,7 +67,7 @@ exports.login = (async (req, res, next) => {
 
         // if user not found
         if (!user) {
-            res.status(400).send({
+            return res.status(400).send({
                 success: false,
                 msg: "Invalid credentials"
             })
@@ -78,7 +78,7 @@ exports.login = (async (req, res, next) => {
 
         // if password is not match
         if (!isMatch) {
-            res.status(401).send({
+            return res.status(401).send({
                 success: false,
                 message: "Invalid credentials"
             })
@@ -98,23 +98,31 @@ exports.login = (async (req, res, next) => {
 // @route   GET /api/v1/auth/me
 // @access  Private
 exports.getMe = (async (req, res, next) => {
-    const user = await User.findById(req.user.id)
-    res.status(200).send({
-        success: true,
-        data: user
-    })
+    try {
+        const user = await User.findById(req.user.id)
+        return res.status(200).send({
+            success: true,
+            data: user
+        })
+    } catch (err) {
+        console.log(err);
+        return res.status(500).send({
+            success: false,
+            message: err.message
+        })
+    }
 })
 
 // @desc    Logout user
 // @route   GET /api/v1/auth/logout
 // @access  Public
 exports.logout = (async (req, res, next) => {
-    res.cookie('cookie', 'none', {
+    res.cookie('token', 'none', {
         expires: new Date(Date.now() + 10 * 1000),
         httpOnly: true
     })
 
-    res.status(200).send({
+    return res.status(200).send({
         success: true,
         data: {}
     })
