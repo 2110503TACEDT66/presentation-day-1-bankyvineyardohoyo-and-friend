@@ -5,13 +5,6 @@ const User = require("../models/UserModel");
 // @access  Private
 exports.getUsers = async (req, res, next) => {
     try {
-        if (req.user.role !== "admin") {
-            return res.status(401).send({
-                success: false,
-                message: `This user ID of ${req.user.id} not authorized to access this route`
-            })
-        }
-
         const users = await User.find({});
 
         res.status(200).send({
