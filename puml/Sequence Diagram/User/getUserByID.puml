@@ -15,7 +15,7 @@ client->server ++:req.get('/users/:id')
 server->routerUsers ++:app.use('/users',users)
 routerUsers->middleware ++: protect() , authorized("admin")
 alt User is authenticated and req.user.role is admin
-    middleware -> controllersUsers ++:getUserById()
+    middleware -> controllersUsers ++:getUserByID()
     alt User is exist
         controllersUsers->modelUser ++:findById(req.params.id)
         modelUser ->UsersDatabase ++: UserSchema
