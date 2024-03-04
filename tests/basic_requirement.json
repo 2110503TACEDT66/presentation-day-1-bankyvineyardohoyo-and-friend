@@ -239,7 +239,7 @@
 							"    pm.response.to.have.status(500);",
 							"});",
 							"",
-							"postman.setNextRequest(\"4.2 user - create reservation\");"
+							"postman.setNextRequest(\"4.2 user - create 1st reservation\");"
 						],
 						"type": "text/javascript"
 					}
@@ -283,19 +283,19 @@
 			"response": []
 		},
 		{
-			"name": "4.2 user - create reservation",
+			"name": "4.2 user - create 1st reservation",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.collectionVariables.set(\"reservation_id\", pm.response.json().data._id);",
+							"pm.collectionVariables.set(\"reservation_id_1\", pm.response.json().data._id);",
 							"",
 							"pm.test(\"Status code is 201\", function () {",
 							"    pm.response.to.have.status(201);",
 							"});",
 							"",
-							"postman.setNextRequest(\"4.3 user - create reservation for admin test\");"
+							"postman.setNextRequest(\"4.3 user - create 2nd reservation\");"
 						],
 						"type": "text/javascript"
 					}
@@ -339,7 +339,7 @@
 			"response": []
 		},
 		{
-			"name": "4.3 user - create reservation for admin test",
+			"name": "4.3 user - create 2nd reservation",
 			"event": [
 				{
 					"listen": "test",
@@ -349,6 +349,116 @@
 							"",
 							"pm.test(\"Status code is 201\", function () {",
 							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"postman.setNextRequest(\"4.3 user - create 3rd reservation\");"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"resvDate\": \"2025-03-04T10:00:00Z\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/api/massages/65e1ccd8455d87f8f3f392f5/reservations",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"massages",
+						"65e1ccd8455d87f8f3f392f5",
+						"reservations"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "4.3 user - create 3rd reservation",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.collectionVariables.set(\"reservation_id_3\", pm.response.json().data._id);",
+							"",
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"postman.setNextRequest(\"4.4 user - create exceed reservation\");"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"resvDate\": \"2026-03-04T10:00:00Z\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/api/massages/65e1ccd8455d87f8f3f392f5/reservations",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"massages",
+						"65e1ccd8455d87f8f3f392f5",
+						"reservations"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "4.4 user - create exceed reservation",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400\", function () {",
+							"    pm.response.to.have.status(400);",
 							"});",
 							"",
 							"postman.setNextRequest(\"5 user - update reservation\");"
@@ -372,7 +482,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"resvDate\": \"2025-03-04T10:00:00Z\"\n}",
+					"raw": "{\n    \"resvDate\": \"2030-03-04T10:00:00Z\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -434,14 +544,14 @@
 					}
 				},
 				"url": {
-					"raw": "{{url}}/api/reservations/{{reservation_id}}",
+					"raw": "{{url}}/api/reservations/{{reservation_id_1}}",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
 						"api",
 						"reservations",
-						"{{reservation_id}}"
+						"{{reservation_id_1}}"
 					]
 				}
 			},
@@ -454,7 +564,7 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.collectionVariables.set(\"reservation_id\", null);",
+							"pm.collectionVariables.set(\"reservation_id_1\", null);",
 							"",
 							"pm.test(\"Status code is 200\", function () {",
 							"    pm.response.to.have.status(200);",
@@ -480,14 +590,14 @@
 				"method": "DELETE",
 				"header": [],
 				"url": {
-					"raw": "{{url}}/api/reservations/{{reservation_id}}",
+					"raw": "{{url}}/api/reservations/{{reservation_id_1}}",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
 						"api",
 						"reservations",
-						"{{reservation_id}}"
+						"{{reservation_id_1}}"
 					]
 				}
 			},
@@ -647,7 +757,7 @@
 							"    pm.response.to.have.status(200);",
 							"});",
 							"",
-							"postman.setNextRequest(\"11 admin - delete reservation\");"
+							"postman.setNextRequest(\"11.1 admin - delete 2nd reservation\");"
 						],
 						"type": "text/javascript"
 					}
@@ -690,7 +800,7 @@
 			"response": []
 		},
 		{
-			"name": "11 admin - delete reservation",
+			"name": "11.1 admin - delete 2nd reservation",
 			"event": [
 				{
 					"listen": "test",
@@ -702,7 +812,7 @@
 							"    pm.response.to.have.status(200);",
 							"});",
 							"",
-							"postman.setNextRequest(\"12 admin - delete user test\");"
+							"postman.setNextRequest(\"11.2 admin - delete 3rd reservation\");"
 						],
 						"type": "text/javascript"
 					}
@@ -730,6 +840,52 @@
 						"api",
 						"reservations",
 						"{{reservation_id_2}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "11.2 admin - delete 3rd reservation",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.collectionVariables.set(\"reservation_id_3\", null);",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"postman.setNextRequest(\"12 admin - delete user test\");"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{TOKEN}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/api/reservations/{{reservation_id_3}}",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"reservations",
+						"{{reservation_id_3}}"
 					]
 				}
 			},
@@ -859,11 +1015,16 @@
 			"type": "string"
 		},
 		{
-			"key": "reservation_id",
+			"key": "reservation_id_1",
 			"value": "null"
 		},
 		{
 			"key": "reservation_id_2",
+			"value": "null",
+			"type": "string"
+		},
+		{
+			"key": "reservation_id_3",
 			"value": "null",
 			"type": "string"
 		}
