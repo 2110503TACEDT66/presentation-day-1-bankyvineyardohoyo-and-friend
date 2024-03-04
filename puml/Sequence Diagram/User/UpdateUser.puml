@@ -1,0 +1,47 @@
+@startuml Manage User (PUT)
+
+header Sameple Massage Reservation Sequence Diagram
+title "Manage User (PUT)"
+
+participant "Client" as client
+participant "<<javaScript>>\n:server" as server
+participant "<<routes>>\n:users" as routerUsers
+participant "<<middleware>>\n:authentication" as middleware
+participant "<<controllers>>\n:users" as controllersUsers
+participant "<<models>>\n:User" as modelUser
+database "<<MongoDB>>\n:users" as UsersDatabase
+
+client->server ++:req.get('/users/:id')
+server->routerUsers ++:app.use('/users',users)
+routerUsers->middleware ++: protect()
+alt User is authenticated
+    middleware -> controllersUsers ++: updateUser()
+    controllersUsers->modelUser ++:findById(req.params.id)
+    modelUser->UsersDatabase ++: UserSchema
+    modelUser<--UsersDatabase : user
+    controllersUsers<--modelUser: user
+    alt req.user.role is not admin
+        alt User is exist and this user is owner of data
+            controllersUsers->modelUser :set(req.body)\nsave()
+            modelUser ->UsersDatabase : UserSchema
+            UsersDatabase --> modelUser : user
+            controllersUsers <-- modelUser :user
+            controllersUsers->client :response
+        else User is not exist or this user is not owner of data
+            controllersUsers->client : err response
+        end
+    else req.user.role is admin
+        alt User is not exist
+            controllersUsers->client : err response
+        else User is exist
+            controllersUsers->modelUser :set(req.body)\nsave()
+            modelUser ->UsersDatabase : UserSchema
+            UsersDatabase --> modelUser --: user
+            controllersUsers <-- modelUser --:user
+            controllersUsers->client --:response
+        end
+    end
+else User is not authenticated
+    middleware->client --: err response
+end
+@enduml

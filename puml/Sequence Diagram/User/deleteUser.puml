@@ -1,0 +1,53 @@
+@startuml Manage User (DELETE)
+
+header Sameple Massage Reservation Sequence Diagram
+title "Manage User (DELETE)"
+
+participant "Client" as client
+participant "<<javaScript>>\n:server" as server
+participant "<<routes>>\n:users" as routerUsers
+participant "<<middleware>>\n:authentication" as middleware
+participant "<<controllers>>\n:users" as controllersUsers
+participant "<<models>>\n:User" as modelUser
+participant "<<models>>\n:Reservation" as modelReservation
+database "<<MongoDB>>\n:users" as UsersDatabase
+database "<<MongoDB>>\n:reservations" as ReservationDatabase
+
+client->server ++:req.get('/users/:id')
+server->routerUsers ++:app.use('/users',users)
+routerUsers->middleware ++: protect()
+alt User is authenticated
+    middleware -> controllersUsers ++: deleteUser()
+    controllersUsers->modelUser ++:findById(req.params.id)
+    modelUser->UsersDatabase ++: UserSchema
+    modelUser<--UsersDatabase : user
+    controllersUsers<--modelUser: user
+    alt req.user.role is not admin
+        alt user is exist and this user is owner of data
+            controllersUsers->modelUser :deleteOne()
+            modelUser ->UsersDatabase : UserSchema
+            UsersDatabase --> modelUser : {} (empty object)
+            modelUser->modelReservation ++: cascade delete
+            modelReservation->ReservationDatabase ++: ReservationSchema
+            controllersUsers <-- modelUser :{} (empty object)
+            controllersUsers->client :response
+        else user is not exist or this user is not owner of data
+            controllersUsers->client : err response
+        end
+    else req.user.role is admin
+        alt user is not exist
+            controllersUsers->client : err response
+        else user is exist
+            controllersUsers->modelUser :deleteOne()
+            modelUser ->UsersDatabase : UserSchema
+            UsersDatabase --> modelUser --: {} (empty object)
+            modelUser->modelReservation : cascade delete
+            modelReservation->ReservationDatabase --: ReservationSchema
+            controllersUsers <-- modelUser --:{} (empty object)
+            controllersUsers->client --:response
+        end
+    end
+else User is not authenticated
+    middleware->client --: err response
+end
+@enduml
