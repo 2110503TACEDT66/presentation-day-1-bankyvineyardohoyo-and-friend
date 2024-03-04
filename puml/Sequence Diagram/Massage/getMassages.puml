@@ -1,0 +1,22 @@
+@startuml Manage Massage (GET)
+
+header Massage-Reservation-System Sequence Diagram
+title "Manage Massage (GET)"
+
+participant "Client" as client
+participant "<<javaScript>>\n:server" as server
+participant "<<routes>>\n:massageRouter" as massageRouter
+participant "<<controllers>>\n:massageController" as massageController
+participant "<<models>>\n:MassageModel" as massageModel
+database "<<MongoDB>>\n:massages" as massageDatabase
+
+client -> server ++: req.get('/massages')
+server -> massageRouter ++: app.use('/massages', massages)
+massageRouter -> massageController ++: getMassages()
+massageController -> massageModel ++: Massage.find(JSON.parse(queryStr))
+massageModel -> massageDatabase ++: MassageSchema
+massageDatabase --> massageModel --: massages
+massageController <-- massageModel --: massages
+massageController -> client --: response
+
+@enduml

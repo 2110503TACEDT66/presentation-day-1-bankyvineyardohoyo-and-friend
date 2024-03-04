@@ -1,0 +1,23 @@
+@startuml Manage Auth (POST)
+
+header Massage-Reservation-System Sequence Diagram
+title "Manage Auth (POST)"
+
+participant "Client" as client
+participant "<<javaScript>>\n:server" as server
+participant "<<routes>>\n:authRouter" as authRouter
+participant "<<controllers>>\n:authController" as authController
+participant "<<models>>\n:UserModel" as userModel
+database "<<MongoDB>>\n:users" as userDatabase
+
+client -> server ++: req.post('/auth/register')
+server -> authRouter ++: app.use('/auth', auth)
+authRouter -> authController ++: register()
+authController -> userModel ++: User.create({name, email, password, role, tel})
+userModel -> userDatabase ++: UserSchema
+userDatabase --> userModel --: user
+authController <-- userModel --: user
+authController -> authController : sendTokenResponse(user, 200, res)
+authController -> client --: token, response
+
+@enduml

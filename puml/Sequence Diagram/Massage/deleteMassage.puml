@@ -1,0 +1,40 @@
+@startuml Manage Massage (DELETE)
+
+header Massage-Reservation-System Sequence Diagram
+title "Manage Massage (DELETE)"
+
+participant "Client" as client
+participant "<<javaScript>>\n:server" as server
+participant "<<routes>>\n:massageRouter" as massageRouter
+participant "<<middlewares>>\n:authMiddleware" as authMiddleware
+participant "<<controllers>>\n:massageController" as massageController
+participant "<<models>>\n:MassageModel" as massageModel
+participant "<<models>>\n:ReservationModel" as reservationModel
+database "<<MongoDB>>\n:massages" as massageDatabase
+database "<<MongoDB>>\n:reservations" as reservationDatabase
+
+client -> server ++: req.delete('/massages/:id')
+server -> massageRouter ++: app.use('/massages', massages)
+massageRouter -> authMiddleware ++: protect(), authorize("admin")
+alt user is authenticated and\nreq.user.role is admin
+    authMiddleware -> massageController ++: deleteMassage()
+    massageController -> massageModel ++: Massage.findById(req.params.id)
+    massageModel -> massageDatabase ++: MassageSchema
+    massageDatabase --> massageModel : massage
+    massageController <-- massageModel : massage
+    alt massage is not exist
+        massageController -> client : error response
+    else massage is exist
+        massageController -> massageModel : massage.deleteOne()
+        massageModel -> massageDatabase : MassageSchema
+        massageDatabase --> massageModel --: {} (empty object)
+        massageModel -> reservationModel ++: cascade delete
+        reservationModel -> reservationDatabase ++: ReservationSchema
+        massageController <-- massageModel --: {} (empty object)
+        massageController -> client --: response
+    end
+else user is not authenticated or req.user.role is not admin
+    authMiddleware -> client --: error response
+end
+
+@enduml

@@ -1,0 +1,18 @@
+@startuml Manage Auth (GET)
+
+header Massage-Reservation-System Sequence Diagram
+title "Manage Auth (GET)"
+
+participant "Client" as client
+participant "<<javaScript>>\n:server" as server
+participant "<<routes>>\n:authRouter" as authRouter
+participant "<<controllers>>\n:authController" as authController
+participant "<<models>>\n:UserModel" as userModel
+database "<<MongoDB>>\n:users" as userDatabase
+
+client -> server ++: req.get('/auth/logout')
+server -> authRouter ++: app.use('/auth', auth)
+authRouter -> authController ++: logout()
+authController -> client --: response\n(clear token)
+
+@enduml

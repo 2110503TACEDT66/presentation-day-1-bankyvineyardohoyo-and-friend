@@ -1,0 +1,40 @@
+@startuml Manage Reservation (GET)
+
+header Massage-Reservation-System Sequence Diagram
+title "Manage Reservation (GET)"
+
+participant "Client" as client
+participant "<<javaScript>>\n:server" as server
+participant "<<routes>>\n:reservationRouter" as reservationRouter
+participant "<<middlewares>>\n:authMiddleware" as authMiddleware
+participant "<<controllers>>\n:reservationController" as reservationController
+participant "<<models>>\n:ReservationModel" as reservationModel
+database "<<MongoDB>>\n:reservations" as reservationDatabase
+
+client -> server ++: req.get('/reservations/:id')
+server -> reservationRouter ++: app.use('/reservations', reservations)
+reservationRouter -> authMiddleware ++: protect()
+alt user is authenticated
+    authMiddleware -> reservationController ++: getReservationById()
+    reservationController -> reservationModel ++: Reservation.findById(req.params.id)\n.populate({path: "massage", select: "name address tel"})
+    reservationModel -> reservationDatabase ++: reservationSchema
+    reservationDatabase --> reservationModel --: reservation
+    reservationController <-- reservationModel --: reservation
+    alt req.user.role is not admin
+        alt reservation is exist and reservation.user.toString() is req.user.id
+            reservationController -> client : response
+        else reservation is not exist or reservation.user.toString() is not req.user.id
+            reservationController -> client : error response
+        end
+    else req.user.role is admin
+        alt reservation is not exist
+            reservationController -> client : error response
+        else reservation is exist
+            reservationController -> client --: response
+        end
+    end
+else user is not authenticated
+    authMiddleware -> client --: error response
+end
+
+@enduml

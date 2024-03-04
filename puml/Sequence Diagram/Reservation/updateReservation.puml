@@ -1,0 +1,48 @@
+@startuml Manage Reservation (PUT)
+
+header Massage-Reservation-System Sequence Diagram
+title "Manage Reservation (PUT)"
+
+participant "Client" as client
+participant "<<javaScript>>\n:server" as server
+participant "<<routes>>\n:reservationRouter" as reservationRouter
+participant "<<middlewares>>\n:authMiddleware" as authMiddleware
+participant "<<controllers>>\n:reservationController" as reservationController
+participant "<<models>>\n:ReservationModel" as reservationModel
+database "<<MongoDB>>\n:reservations" as reservationDatabase
+
+client -> server ++: req.put('/reservations/:id')
+server -> reservationRouter ++: app.use('/reservations', reservations)
+reservationRouter -> authMiddleware ++: protect()
+alt user is authenticated
+    authMiddleware -> reservationController ++: updateReservation()
+    reservationController -> reservationModel ++: Reservation.findById(req.params.id)
+    reservationModel -> reservationDatabase ++: reservationSchema
+    reservationDatabase --> reservationModel : reservation
+    reservationController <-- reservationModel : reservation
+    alt req.user.role is not admin
+        alt reservation is exist and req.user.id is reservation.user.toString()
+            reservationController -> reservationModel : Reservation.findByIdAndUpdate(req.params.id, req.body,\n{new: true, runValidators: true})
+            reservationModel -> reservationDatabase : reservationSchema
+            reservationDatabase --> reservationModel : reservation
+            reservationController <-- reservationModel : reservation
+            reservationController -> client : response
+        else reservation is not exist or req.user.id is not reservation.user.toString()
+            reservationController -> client : error response
+        end
+    else req.user.role is admin
+        alt reservation is not exist
+            reservationController -> client : error response
+        else reservation is exist
+            reservationController -> reservationModel : Reservation.findByIdAndUpdate(req.params.id, req.body,\n{new: true, runValidators: true})
+            reservationModel -> reservationDatabase : reservationSchema
+            reservationDatabase --> reservationModel --: reservation
+            reservationController <-- reservationModel --: reservation
+            reservationController -> client --: response
+        end
+    end
+else user is not authenticated
+    authMiddleware -> client --: error response
+end
+
+@enduml

@@ -1,0 +1,44 @@
+@startuml Manage Reservation (POST)
+
+header Massage-Reservation-System Sequence Diagram
+title "Manage Reservation (POST)"
+
+participant "Client" as client
+participant "<<javaScript>>\n:server" as server
+participant "<<routes>>\n:reservationRouter" as reservationRouter
+participant "<<middlewares>>\n:authMiddleware" as authMiddleware
+participant "<<controllers>>\n:reservationController" as reservationController
+participant "<<models>>\n:ReservationModel" as reservationModel
+participant "<<models>>\n:MassageModel" as massageModel
+database "<<MongoDB>>\n:reservations" as reservationDatabase
+database "<<MongoDB>>\n:massages" as massageDatabase
+
+client -> server ++: req.post('/:massageId/reservations')
+server -> reservationRouter ++: app.use('/reservations', reservations)
+reservationRouter -> authMiddleware ++: protect()
+alt user is authenticated
+    authMiddleware -> reservationController ++: createReservation()
+    reservationController -> reservationModel ++: Reservation.find({user : req.user.id})
+    reservationModel -> reservationDatabase ++: reservationSchema
+    reservationDatabase --> reservationModel : existedReservation
+    reservationController <-- reservationModel : existedReservation
+    alt existedReservation.length not lessthan 3 and req.user.role is not "admin"
+        reservationController -> client : error response
+    end
+    reservationController -> massageModel ++: Massage.findById(req.params.massageId)
+    massageModel -> massageDatabase ++: massageSchema
+    massageDatabase --> massageModel --: massage
+    reservationController <-- massageModel --: massage
+    alt massage is not exist
+        reservationController -> client : error response
+    end
+    reservationController -> reservationModel : Reservation.create(req.body)
+    reservationModel -> reservationDatabase : reservationSchema
+    reservationDatabase --> reservationModel --: reservation
+    reservationController <-- reservationModel --: reservation
+    reservationController -> client --: response
+else user is not authenticated
+    authMiddleware -> client --: error response
+end
+
+@enduml

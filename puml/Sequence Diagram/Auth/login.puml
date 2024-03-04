@@ -1,0 +1,39 @@
+@startuml Manage Auth (POST)
+
+header Massage-Reservation-System Sequence Diagram
+title "Manage Auth (POST)"
+
+participant "Client" as client
+participant "<<javaScript>>\n:server" as server
+participant "<<routes>>\n:authRouter" as authRouter
+participant "<<controllers>>\n:authController" as authController
+participant "<<models>>\n:UserModel" as userModel
+database "<<MongoDB>>\n:users" as userDatabase
+
+client -> server ++: req.post('/auth/login')
+server -> authRouter ++: app.use('/auth', auth)
+authRouter -> authController ++: login()
+alt email or password is not exist
+    authController -> client : error response
+else email and password is exist
+    authController -> userModel ++: User.findOne({email}).select('+password')
+    userModel -> userDatabase ++: UserSchema
+    userDatabase --> userModel : user
+    authController <-- userModel : user
+    alt user is not exist
+        authController -> client : error response
+    else user is exist
+        authController -> userModel : user.matchPassword(password)
+        userModel -> userDatabase : UserSchema
+        userDatabase --> userModel --: isMatch
+        authController <-- userModel --: isMatch
+        alt isMatch is false
+            authController -> client : error response
+        else isMatch is true
+            authController -> authController : sendTokenResponse(user, 200, res)
+            authController -> client --: token, response
+        end
+    end
+end
+
+@enduml
