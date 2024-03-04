@@ -1,0 +1,28 @@
+@startuml Manage Auth (GET)
+
+header Massage-Reservation-System Sequence Diagram
+title "Manage Auth (GET)"
+
+participant "Client" as client
+participant "<<javaScript>>\n:server" as server
+participant "<<routes>>\n:authRouter" as authRouter
+participant "<<middlewares>>\n:authMiddleware" as authMiddleware
+participant "<<controllers>>\n:authController" as authController
+participant "<<models>>\n:UserModel" as userModel
+database "<<MongoDB>>\n:users" as userDatabase
+
+client -> server ++: req.get('/auth/getMe')
+server -> authRouter ++: app.use('/auth', auth)
+authRouter -> authMiddleware ++: protect()
+alt user is authenticated
+    authMiddleware -> authController ++: getMe()
+    authController -> userModel ++: User.findById(req.user.id)
+    userModel -> userDatabase ++: UserSchema
+    userDatabase --> userModel --: user
+    authController <-- userModel --: user
+    authController -> client --: response
+else user is not authenticated
+    authMiddleware -> client --: error response
+end
+
+@enduml

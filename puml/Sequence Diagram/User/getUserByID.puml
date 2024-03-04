@@ -1,0 +1,32 @@
+@startuml Manage User (GET)
+
+header Sameple Massage Reservation Sequence Diagram
+title "Manage User (GET)"
+
+participant "Client" as client
+participant "<<javaScript>>\n:server" as server
+participant "<<routes>>\n:users" as routerUsers
+participant "<<middleware>>\n:authentication" as middleware
+participant "<<controllers>>\n:users" as controllersUsers
+participant "<<models>>\n:User" as modelUser
+database "<<MongoDB>>\n:users" as UsersDatabase
+
+client->server ++:req.get('/users/:id')
+server->routerUsers ++:app.use('/users',users)
+routerUsers->middleware ++: protect() , authorized("admin")
+alt User is authenticated and req.user.role is admin
+    middleware -> controllersUsers ++:getUserByID()
+    alt User is exist
+        controllersUsers->modelUser ++:findById(req.params.id)
+        modelUser ->UsersDatabase ++: UserSchema
+        UsersDatabase --> modelUser --: users
+        controllersUsers <-- modelUser --:users
+        controllersUsers->client :response
+    else User is not exist
+        controllersUsers->client --: err response
+    end
+else User is not authenticated or req.user.role is not admin
+    middleware->client: error response
+end
+
+@enduml

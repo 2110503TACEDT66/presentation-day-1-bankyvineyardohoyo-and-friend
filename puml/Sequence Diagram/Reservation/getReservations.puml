@@ -1,0 +1,42 @@
+@startuml Manage Reservation (GET)
+
+header Massage-Reservation-System Sequence Diagram
+title "Manage Reservation (GET)"
+
+participant "Client" as client
+participant "<<javaScript>>\n:server" as server
+participant "<<routes>>\n:reservationRouter" as reservationRouter
+participant "<<middlewares>>\n:authMiddleware" as authMiddleware
+participant "<<controllers>>\n:reservationController" as reservationController
+participant "<<models>>\n:ReservationModel" as reservationModel
+database "<<MongoDB>>\n:reservations" as reservationDatabase
+
+client -> server ++: req.get('/reservations')
+server -> reservationRouter ++: app.use('/reservations', reservations)
+reservationRouter -> authMiddleware ++: protect()
+alt user is authenticated
+    authMiddleware -> reservationController ++: getReservations()
+    alt req.user.role is admin
+        alt req have req.params.massageId
+            reservationController -> reservationModel ++: Reservation.find({massage: req.params.massageId})\n.populate({path: "massage", select: "name add})
+            reservationModel -> reservationDatabase ++: reservationSchema
+            reservationDatabase --> reservationModel : reservation
+            reservationController <-- reservationModel : reservation
+        else req does not have req.params.massageId
+            reservationController -> reservationModel : Reservation.find({})\n.populate({path: "massage", select: "name address tel"})
+            reservationModel -> reservationDatabase : reservationSchema
+            reservationDatabase --> reservationModel : reservation
+            reservationController <-- reservationModel : reservation
+        end
+    else req.user.role is not admin
+            reservationController -> reservationModel : Reservation.find({user: req.user.id})\n.populate({path: "massage", select: "name address tel"})
+            reservationModel -> reservationDatabase : reservationSchema
+            reservationDatabase --> reservationModel --: reservation
+            reservationController <-- reservationModel --: reservation
+    end
+    reservationController -> client --: response
+else user is not authenticated
+    authMiddleware -> client --: error response
+end
+
+@enduml

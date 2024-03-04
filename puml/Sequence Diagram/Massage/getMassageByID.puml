@@ -1,0 +1,26 @@
+@startuml Manage Massage (GET)
+
+header Massage-Reservation-System Sequence Diagram
+title "Manage Massage (GET)"
+
+participant "Client" as client
+participant "<<javaScript>>\n:server" as server
+participant "<<routes>>\n:massageRouter" as massageRouter
+participant "<<controllers>>\n:massageController" as massageController
+participant "<<models>>\n:MassageModel" as massageModel
+database "<<MongoDB>>\n:massages" as massageDatabase
+
+client -> server ++: req.get('/massages/:id')
+server -> massageRouter ++: app.use('/massages', massages)
+massageRouter -> massageController ++: getMassageByID()
+massageController -> massageModel ++: Massage.findById(req.params.id)
+massageModel -> massageDatabase ++: MassageSchema
+massageDatabase --> massageModel --: massage
+massageController <-- massageModel --: massage
+alt massage is not exist
+    massageController -> client : error response
+else massage is exist
+    massageController -> client --: response
+end
+
+@enduml

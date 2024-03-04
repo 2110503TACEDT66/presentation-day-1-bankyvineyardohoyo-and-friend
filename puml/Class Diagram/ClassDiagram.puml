@@ -1,0 +1,107 @@
+@startuml
+left to right direction
+package "VacQ"{
+    class "<<Application>>\nMassageReservationService" as VacQService{}
+
+    class "<<Resource>>\nMassages" as ResourceMassages{
+        <<GET>> +getMassages():Massage
+        <<POST>> +createMassage():Massage
+    }
+
+    class "<<Resource>>\nMassage" as ResourceMassage {
+        <<GET>> +getMassageByID(): Massage
+        <<PUT>> +updateMassage(): Massage
+        <<DELETE>> +deleteMassage(): void
+    }
+
+    class "<<Representation>>\nMassage" as RepresentationMassage {
+        -name
+        -address
+        -province
+        -tel
+        -openTime
+        -closeTime
+    }
+
+    class "<<Resource>>\nUsers" as ResourceUsers{
+        <<GET>> +getUsers():User
+    }
+
+    class "<<Resource>>\nUser" as ResourceUser {
+        <<GET>> +getUserByID(): User
+        <<PUT>> +updateUser(): User
+        <<DELETE>> +deleteUser(): void
+    }
+    class "<<Resource>>\nAuth" as ResourceAuthRegister {
+        <<POST>> +register(): token
+    }
+
+     class "<<Resource>>\nUsers" as ResourceAuthLogin{
+         <<POST>> +login(): token
+    }
+     class "<<Resource>>\nUsers" as ResourceAuthLogout{
+       <<GET>> +logout(): void
+    }
+     class "<<Resource>>\nUsers" as ResourceAuthGetMe{
+        <<GET>> +getMe(): User
+    }
+     
+
+  
+
+
+    class "<<Representation>>\nUser" as RepresentationUser {
+        -name
+        -email
+        -tel
+        -role
+        -password
+        -createdAt
+        
+    }
+
+    
+    class "<<Resource>>\nReservations" as ResourceReservations{
+        <<GET>> +getReservations(): Reservation
+        <<POST>> +createReservation(): Reservation
+        
+    }
+
+     class "<<Resource>>\nReservation" as ResourceReservation {
+        <<GET>> +getReservationByID(): Reservation
+        <<PUT>> +updateReservation(): Reservation
+        <<DELETE>> +deleteReservation(): void
+    }
+
+    class "<<Representation>>\nReservation" as RepresentationReservation {
+        -resvDate
+        -user
+        -massage
+        -createdAt
+    }
+}
+
+VacQService ..> ResourceMassages:"/massages\n<<Path>>"
+ResourceMassages ..> ResourceMassage: "/{massageId}\n<<Path>>"
+ResourceMassage ..> RepresentationMassage: "<<use>>"
+
+VacQService ..> ResourceUsers:"/users\n<<Path>>"
+ResourceUsers ..> ResourceUser: "/{userId}\n<<Path>>"
+ResourceUser ..> RepresentationUser: "<<use>>"
+
+VacQService ..> ResourceReservations:"/reservations\n<<Path>>"
+ResourceReservations ..> ResourceReservation: "/{reservationId}\n<<Path>>"
+ResourceReservation ..> RepresentationReservation: "<<use>>"
+
+VacQService ..> ResourceAuthLogin:"/auth/login\n<<Path>>"
+VacQService ..> ResourceAuthLogout:"/auth/logout\n<<Path>>"
+VacQService ..> ResourceAuthRegister:"/auth/register\n<<Path>>"
+VacQService ..> ResourceAuthGetMe:"/auth/me\n<<Path>>"
+
+ResourceAuthGetMe ..> RepresentationUser: "<<use>>"
+ResourceAuthLogin ..> RepresentationUser: "<<use>>"
+ResourceAuthLogout ..> RepresentationUser: "<<use>>"
+ResourceAuthRegister ..> RepresentationUser: "<<use>>"
+
+
+@enduml

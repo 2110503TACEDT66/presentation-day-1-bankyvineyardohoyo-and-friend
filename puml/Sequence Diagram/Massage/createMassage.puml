@@ -1,0 +1,28 @@
+@startuml Manage Massage (POST)
+
+header Massage-Reservation-System Sequence Diagram
+title "Manage Massage (POST)"
+
+participant "Client" as client
+participant "<<javaScript>>\n:server" as server
+participant "<<routes>>\n:massageRouter" as massageRouter
+participant "<<middlewares>>\n:authMiddleware" as authMiddleware
+participant "<<controllers>>\n:massageController" as massageController
+participant "<<models>>\n:MassageModel" as massageModel
+database "<<MongoDB>>\n:massages" as massageDatabase
+
+client -> server ++: req.post('/massages')
+server -> massageRouter ++: app.use('/massages', massages)
+massageRouter -> authMiddleware ++: protect(), authorize("admin")
+alt user is authenticated and\nreq.user.role is admin
+    authMiddleware -> massageController ++: createMassage()
+    massageController -> massageModel ++: Massage.create(req.body)
+    massageModel -> massageDatabase ++: MassageSchema
+    massageDatabase --> massageModel --: massage
+    massageController <-- massageModel --: massage
+    massageController -> client --: response
+else user is not authenticated or req.user.role is not admin
+    authMiddleware -> client --: error response
+end
+
+@enduml
