@@ -15,7 +15,7 @@ client -> server ++: req.get('/reservations/:id')
 server -> reservationRouter ++: app.use('/reservations', reservations)
 reservationRouter -> authMiddleware ++: protect()
 alt user is authenticated
-    authMiddleware -> reservationController ++: getReservationById()
+    authMiddleware -> reservationController ++: getReservationByID()
     reservationController -> reservationModel ++: Reservation.findById(req.params.id)\n.populate({path: "massage", select: "name address tel"})
     reservationModel -> reservationDatabase ++: reservationSchema
     reservationDatabase --> reservationModel --: reservation

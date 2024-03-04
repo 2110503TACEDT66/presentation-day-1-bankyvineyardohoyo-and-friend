@@ -12,7 +12,7 @@ database "<<MongoDB>>\n:massages" as massageDatabase
 
 client -> server ++: req.get('/massages/:id')
 server -> massageRouter ++: app.use('/massages', massages)
-massageRouter -> massageController ++: getMassageById()
+massageRouter -> massageController ++: getMassageByID()
 massageController -> massageModel ++: Massage.findById(req.params.id)
 massageModel -> massageDatabase ++: MassageSchema
 massageDatabase --> massageModel --: massage
